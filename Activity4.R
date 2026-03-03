@@ -76,12 +76,78 @@ for(i in 8:length(weather$AirTemp)) {
 #add data to weather df
 weather$airMA <- airMA
 
-#Prompt 2 - fix
+#Prompt 2 
 weather_sub <- weather %>%
-  filter(weather$DateF >= "2022-12-11 15:30:00")
-ggplot(weather,
+  filter(between(weather$DateF, as.Date("2021-5-01 00:00:00"), as.Date("2021-6-01 00:00:00")))
+
+ggplot(weather_sub,
        aes(x = DateF, y = SolRad)) +
   geom_line()
   
- 
+#compared to other months, the sensor seems to behave normally, so I think it hasn't experienced issues
+
+#Prompt 3 - didn't get to this in class
+
 #hw ----
+
+#Question 1:
+#create subset of weather for precipitation that occurs when the air temperature is above or equal to zero
+# X or Y level observations are less than or equal to 2 degrees
+clintonPrecipitation <- subset(weather, AirTemp >= 0 & (XLevel <= 2 | YLevel <= 2))
+
+sum(is.na(clintonPrecipitation$Precip))
+
+#Question 2: 
+#check if Battery Voltage is below 8.5 Volts (8500 mV)
+weather$VoltageFlag <- ifelse(weather$BatVolt < 8500, 
+                             1, 
+                             0) 
+
+#Question 3: 
+#a function that checks for observations that are in unrealistic 
+#data ranges in air temperature and solar radiation.
+
+#function to check that the time interval between elements are the same
+unrealisticAirSolarRange <- function(x) {
+  ifelse(x$BatVolt < 8500, 
+          1, 
+          0) 
+}
+
+#Question 4:
+#subset of weather df for Jan - Mar of 2021.
+winterAirTemp <- weather %>%
+  filter(between(weather$DateF, as.Date("2021-1-01 00:00:00"), as.Date("2021-4-01 00:00:00")))
+
+#ggplot of winter air temperatures in Jan - Mar of 2021.
+ggplot(winterAirTemp,
+       aes(x = DateF, y = AirTemp, col = AirTemp)) +
+  geom_line() +
+  labs(title = "Winter Air Temperature (Jan - Mar 2021)",
+       y = "Air Temp (celcius)",
+       x = "Date",
+       color = "Temp") +
+  scale_color_gradientn(colors = c("blue", "#FFFD87", "red")) +
+  theme_minimal()
+
+#Question 5:
+#subset of weather df for Mar - April of 2021.
+marAprAirTemp <- weather %>%
+  filter(between(weather$DateF, as.Date("2021-3-01 00:00:00"), as.Date("2021-5-01 00:00:00")))
+
+for(x in 1:nrow(marAprAirTemp)) {
+  marAprAirTemp[x] <- ifelse(marAprAirTemp[x]$AirTemp < 1.7,
+                             NA,
+                             marAprAirTemp[x]$AirTemp)
+}
+
+#ggplot of winter air temperatures in Jan - Mar of 2021.
+ggplot(winterAirTemp,
+       aes(x = DateF, y = AirTemp, col = AirTemp)) +
+  geom_line() +
+  labs(title = "Winter Air Temperature (Jan - Mar 2021)",
+       y = "Air Temp (celcius)",
+       x = "Date",
+       color = "Temp") +
+  scale_color_gradientn(colors = c("blue", "#FFFD87", "red")) +
+  theme_minimal()
