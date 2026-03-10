@@ -91,11 +91,16 @@ ggplot(weather_sub,
 #hw ----
 
 #Question 1:
-#create subset of weather for precipitation that occurs when the air temperature is above or equal to zero
-# X or Y level observations are less than or equal to 2 degrees
-clintonPrecipitation <- subset(weather, AirTemp >= 0 & (abs(XLevel) <= 2 & abs(YLevel) <= 2))
+#makes duplicate of the weather df
+clintonPrecip <- weather
 
-sum(is.na(clintonPrecipitation$Precip))
+#check for precipitation that occurs when the air temperature is above or equal to zero
+# X or Y level observations are less than or equal to 2 degrees
+clintonPrecip$Precip <- ifelse(clintonPrecip$AirTemp >= 0 & (abs(clintonPrecip$XLevel) <= 2 & abs(clintonPrecip$YLevel) <= 2),
+                               clintonPrecip$Precip,
+                               NA)
+  
+sum(is.na(clintonPrecip$Precip))
 
 #Question 2: 
 #check if Battery Voltage is below 8.5 Volts (8500 mV)
@@ -104,17 +109,11 @@ weather$VoltageFlag <- ifelse(weather$BatVolt < 8500,
                              0) 
 
 #Question 3: 
-weather_no_na <- subset(weather, !is.na(weather$SolRad))
-ggplot(weather,
-       aes(x = DateF, y = AirTemp)) +
-  geom_line()
-#a function that checks for observations that are in unrealistic 
-#data ranges in air temperature and solar radiation.
-#checks if solar radiation is more than twice the radiation of the previous radiation
-#checks if airtemp is more than 1 greater/less than previous airtemp record
+#function that returns rows if solar radiation is outside the range 0 - 1000 
+#or if the Air Temp if outside the range -20 - 32
 unrealisticAirSolarRange <- function(x) {
-  x[(!is.na(x$AirTemp) & (x$AirTemp > 30 | x$SolRad < -25)) |
-    (!is.na(x$SolRad) & (x$SolRad > 950 | x$SolRad < 0)), ]
+  x[(!is.na(x$AirTemp) & (x$AirTemp > 32 | x$AirTemp < -20)) |
+    (!is.na(x$SolRad) & (x$SolRad > 1000 | x$SolRad < 0)), ]
 }
 nrow(unrealisticAirSolarRange(weather))
 
@@ -157,18 +156,9 @@ sum(!is.na(marAprAirTemp$Precip))
 #3858
 
 #Question 6:
-#Read in the soil temperature data using the for loop. 
-#Alter your time interval function to include a user specified time interval 
-#(in seconds) as an argument in the function. 
-#Check for any clock/time issues associated with the soil data and 
-#include the results in your output. 
-#Include a brief description of any issues with the clock/data availability. 
-#for (x in 1:nrow(weather)) {
-#  soilData <- weather$so
-#}
-
-
-soilData$Date <- ymd_hm(soilData$Timestamp, tz = "America/New_York")
+#adds Date column to the soilData df 
+soilData$Date <- ymd_hm(soilData$Timestamp)
+# could also use tz = "America/New_York", but unsure about timezone
 
 #time check function updated to check for all inconsistencies for user chosen second intervals
 timeCheck <- function(x, time) {
