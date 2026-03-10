@@ -113,9 +113,10 @@ ggplot(weather,
 #checks if solar radiation is more than twice the radiation of the previous radiation
 #checks if airtemp is more than 1 greater/less than previous airtemp record
 unrealisticAirSolarRange <- function(x) {
-  weather[, SolRad > x]
+  x[(!is.na(x$AirTemp) & (x$AirTemp > 30 | x$SolRad < -25)) |
+    (!is.na(x$SolRad) & (x$SolRad > 950 | x$SolRad < 0)), ]
 }
-unrealisticAirSolarRange(1)
+nrow(unrealisticAirSolarRange(weather))
 
 #Question 4:
 #subset of weather df for Jan - Mar of 2021.
